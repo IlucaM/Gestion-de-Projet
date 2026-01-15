@@ -1,8 +1,13 @@
+/**
+ * Store global pour la gestion des projets et tâches
+ * Utilise localStorage pour la persistance des données
+ */
+
 import { useEffect, useMemo, useState } from "react"
 
 export type TaskStatus = "A faire" | "En cours" | "Terminé"
 export type ProjectStatus = "En attente" | "En cours" | "Terminé"
-export type Priority = "basse" | "moyenne" | "haute"
+export type Priority = "Haute" | "Moyenne" | "Basse"
 
 export type Task = {
   id: string
@@ -10,7 +15,7 @@ export type Task = {
   status: TaskStatus
   assignee?: string
   dueDate?: string
-  priority?: Priority
+  priority: Priority
 }
 
 export type Project = {
@@ -43,13 +48,23 @@ export function useProjectStore() {
   const [projects, setProjects] = useState<Project[]>([])
   const [initialized, setInitialized] = useState(false)
 
+  // Chargement initial depuis localStorage avec migration des données
   useEffect(() => {
     if (typeof window === "undefined") return
     const initial = safeParse<Project[]>(window.localStorage.getItem(STORAGE_KEY), [])
-    setProjects(initial)
+    // Migration: ajout d'une priorité par défaut pour compatibilité
+    const migrated = initial.map(p => ({
+      ...p,
+      tasks: p.tasks.map(t => ({
+        ...t,
+        priority: t.priority || "Moyenne",
+      })),
+    }))
+    setProjects(migrated)
     setInitialized(true)
   }, [])
 
+  // Sauvegarde automatique dans localStorage
   useEffect(() => {
     if (!initialized) return
     try {
@@ -57,18 +72,19 @@ export function useProjectStore() {
         window.localStorage.setItem(STORAGE_KEY, JSON.stringify(projects))
       }
     } catch {
-      /* noop */
+      // Gestion silencieuse des erreurs (quota dépassé)
     }
-  }, [projects])
+  }, [projects, initialized])
 
   const totals = useMemo(() => {
     const totalTasks = projects.reduce((acc, p) => acc + p.tasks.length, 0)
     const doneTasks = projects.reduce((acc, p) => acc + p.tasks.filter(t => t.status === "Terminé").length, 0)
     const inProgressTasks = projects.reduce((acc, p) => acc + p.tasks.filter(t => t.status === "En cours").length, 0)
+    const now = new Date().getTime()
     const lateProjects = projects.filter(p => {
       if (!p.dueDate) return false
       try {
-        return new Date(p.dueDate).getTime() < Date.now() && p.status !== "Terminé"
+        return new Date(p.dueDate).getTime() < now && p.status !== "Terminé"
       } catch {
         return false
       }
@@ -98,7 +114,7 @@ export function useProjectStore() {
   }
 
   function addTask(projectId: string, input: Omit<Task, "id">) {
-    const task: Task = { ...input, id: uid("t_") }
+    const task: Task = { ...input, priority: input.priority || "Moyenne", id: uid("t_") }
     setProjects(prev =>
       prev.map(p => (p.id === projectId ? { ...p, tasks: [task, ...p.tasks] } : p))
     )
