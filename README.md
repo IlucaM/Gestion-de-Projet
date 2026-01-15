@@ -70,13 +70,6 @@ Vercel est la solution idéale pour déployer cette application Next.js.
 
 Le localStorage fonctionne parfaitement sur Vercel car il s'exécute dans le navigateur de l'utilisateur, non sur le serveur.
 
-Étapes :
-1. Créer un compte Vercel sur https://vercel.com
-2. Connecter votre repository Git
-3. Vercel détecte automatiquement Next.js et configure le projet
-4. Cliquer sur "Deploy"
-5. L'application est accessible via une URL automatique
-
 Avantages : Déploiement instantané, HTTPS gratuit, CDN global, déploiements automatiques, plan gratuit généreux.
 
 Coût : Gratuit pour les projets personnels.
@@ -84,12 +77,6 @@ Coût : Gratuit pour les projets personnels.
 ### AWS Amplify
 
 AWS Amplify offre une alternative avec configuration minimale.
-
-Étapes :
-1. Connecter le repository Git à AWS Amplify
-2. Amplify détecte automatiquement Next.js
-3. Déploiement automatique à chaque push
-4. URL de production générée automatiquement
 
 Avantages : Déploiement simple, HTTPS inclus, CDN intégré, déploiements automatiques.
 
@@ -118,4 +105,5 @@ gestion-projet/
 ```
 
 ## Licence
+
 MIT
